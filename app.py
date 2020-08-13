@@ -5,25 +5,78 @@ the statistical information for a chosen team
 import constants
 
 
-# create a key: value pair list for the teams
-new_list = [{'team': i} for i in constants.TEAMS]
-
-# add players to new list, so that we can assign players to the teams
-storage_list = constants.PLAYERS
-
 # variables
-border_line = "=" * 100
-dashed_line = "-" * 100
-new_player_list = {}
-final_list = []
-player_count = range(len(storage_list) // len(new_list))
+border_line = "=" * 110
+dashed_line = "-" * 110
+new_list = constants.TEAMS
 
-# Create a fnal_list with players assigned to teams
-for i in player_count:
-    for i in new_list:
-        new_player_list = storage_list.pop()
-        new_player_list.update(i) 
-        final_list.append(new_player_list)
+
+def clean_data():
+    ''' Creates a new player list to be searched later
+    Height changed to int and experience changed to True or False
+    '''
+    storage_list = []
+    #guard_list = []
+    new_player_list = constants.PLAYERS
+    index_range = range(len(new_player_list))
+    for i in index_range:
+        storage_list.append(new_player_list[i]['height'][:2])
+    storage_list = [int(i) for i in storage_list]
+    help = 0
+    for i in storage_list:
+        new_player_list[help]['height'] = i
+        help += 1
+    for i in index_range:
+        if new_player_list[i]['experience'] == 'YES':
+            new_player_list[i]['experience'] = True
+        else:
+            new_player_list[i]['experience'] = False
+    for i in index_range:
+        new_player_list[i]['guardians'] = ', '.join(new_player_list[i]['guardians'].split(" and "))
+    return new_player_list
+  
+
+# Call clean_data function and save in player_list to be used next by the balance_teams function
+player_list = clean_data()
+
+
+def balance_teams(team1, team2, team3):
+    ''' # Create a fnal_list with experienced and inexperienced players equally assigned to teams '''
+    yes = 0
+    yes1 = 0
+    yes2 = 0
+    no = 0
+    no1 = 0
+    no2 = 0
+   
+    for i in range(18):
+        player_list[i]['team'] = ''
+        if player_list[i]['experience'] == True and yes < 3 and player_list[i]['team'] == '':        
+            player_list[i]['team'] = team1
+            yes += 1
+        elif player_list[i]['experience'] == False and no < 3 and player_list[i]['team'] == '':       
+            player_list[i]['team'] = team1
+            no += 1
+        elif player_list[i]['experience'] == True and yes1 < 3 and player_list[i]['team'] == '':       
+            player_list[i]['team'] = team2
+            yes1 += 1
+        elif player_list[i]['experience'] == False and no1 < 3 and player_list[i]['team'] == '':       
+            player_list[i]['team'] = team2
+            no1 += 1
+        elif player_list[i]['experience'] == True and yes2 < 3 and player_list[i]['team'] == '':       
+            player_list[i]['team'] = team3
+            no2 += 1
+        elif player_list[i]['experience'] == False and no2 < 3 and player_list[i]['team'] == '':       
+            player_list[i]['team'] = team3
+            no2 += 1
+        else:
+            player_list[i]['team'] = team3
+    
+    return player_list
+
+
+#Call the balance_teams function and pass in the teams
+final_list = balance_teams(new_list[0], new_list[1], new_list[2])
 
 
 def first_menu():
@@ -50,8 +103,9 @@ def first_menu():
             elif first_menu_answer == 2:
                 print()
                 print(border_line)
-                print("Check out the Team Stats Tool often.  We are always adding amazing stats.")
+                print("  Have a GREAT day!  Remember to check out the Team Stats Tool often, as we are always adding amazing stats!")
                 print(border_line)
+                print()
                 break
 
 
@@ -97,31 +151,27 @@ def data_count_2000(key, value):
     return(how_many)
 
 
-def data_find_count_2000(key_search, value_search, key_find, value_find):
+def data_find_count_2000(key_search, value_search, key_find, key_value):
     ''' # Searches the final_list for a value related to a team and returns the count ''' 
     how_many = 0
     index_range = range(len(final_list))
     for i in index_range:
-        if value_search in final_list[i][key_search] and value_find in final_list[i][key_find]:
+        if value_search in final_list[i][key_search] and final_list[i][key_find] == key_value:
             how_many += 1
-    return(how_many)
+        elif value_search in final_list[i][key_search] and final_list[i][key_find] == key_value:
+            how_many += 1
+    return how_many
+    
 
 
 def data_average_2000(key, value, key_return):
-    ''' # Pulls data for height, strips extra text, turns string into int, places in num_list and returns the average ''' 
+    ''' # Pulls data for height, stores in storage_list, and returns the average ''' 
     storage_list = []
-    num_list = []
     index_range = range(len(final_list))
     for i in index_range:
         if value in final_list[i][key]:
             storage_list.append(final_list[i][key_return])
-    for i in range(len(storage_list)):
-        for i in storage_list:
-            new_list = storage_list.pop()
-            new_list = new_list[:2]
-            num_list.append(new_list)
-    num_list = [int(i) for i in num_list]
-    return round(sum(num_list) / len(num_list))
+    return round(sum(storage_list) / len(storage_list))
 
 
 def data_bank_2000(key, value, key_return):
@@ -131,7 +181,7 @@ def data_bank_2000(key, value, key_return):
     for i in index_range:
         if value in final_list[i][key]:
             storage_list.append(final_list[i][key_return])
-    return '\n'.join(storage_list)
+    return (', '.join(storage_list))
                 
              
 def team_statistics(team):
@@ -141,8 +191,8 @@ def team_statistics(team):
     print(border_line)
     print()
     print("Total players:       {}".format(data_count_2000('team', team)))
-    print("Total experienced:   {}".format(data_find_count_2000('team', team, 'experience', 'YES')))
-    print("Total inexperienced: {}".format(data_find_count_2000('team', team, 'experience', 'NO')))
+    print("Total experienced:   {}".format(data_find_count_2000('team', team, 'experience', True)))
+    print("Total inexperienced: {}".format(data_find_count_2000('team', team, 'experience', False)))
     print("Average height:      {} inches".format(data_average_2000('team', team, 'height')))
     print()
     print(dashed_line)
@@ -164,7 +214,7 @@ def team_statistics(team):
 if __name__ == "__main__":
     print()
     print(border_line)
-    print("BASKETBALL TEAM STATS TOOL")
+    print("BASKETBALL TEAM STATS TOOL! -- Your #1 place for up-to-date stats!")
     print(border_line)
     print()
     print(dashed_line)
@@ -172,6 +222,7 @@ if __name__ == "__main__":
     print(dashed_line)
     print()
     first_menu()
+
     
    
         
