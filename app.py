@@ -3,12 +3,12 @@ the statistical information for a chosen team
 '''
 # import constants.py file, so we can pull in the data
 import constants
-
+# import copy to deepcopy the lists from constants so as to not mutate original lists
+import copy
 
 # variables
 border_line = "=" * 110
 dashed_line = "-" * 110
-new_list = constants.TEAMS
 
 
 def clean_data():
@@ -16,8 +16,7 @@ def clean_data():
     Height changed to int and experience changed to True or False
     '''
     storage_list = []
-    #guard_list = []
-    new_player_list = constants.PLAYERS
+    new_player_list = copy.deepcopy(constants.PLAYERS)
     index_range = range(len(new_player_list))
     for i in index_range:
         storage_list.append(new_player_list[i]['height'][:2])
@@ -32,15 +31,11 @@ def clean_data():
         else:
             new_player_list[i]['experience'] = False
     for i in index_range:
-        new_player_list[i]['guardians'] = ', '.join(new_player_list[i]['guardians'].split(" and "))
+        new_player_list[i]['guardians'] = new_player_list[i]['guardians'].split(" and ")
     return new_player_list
-  
+ 
 
-# Call clean_data function and save in player_list to be used next by the balance_teams function
-player_list = clean_data()
-
-
-def balance_teams(team1, team2, team3):
+def balance_teams(team1, team2, team3, player_list):
     ''' # Create a fnal_list with experienced and inexperienced players equally assigned to teams '''
     yes = 0
     yes1 = 0
@@ -71,12 +66,7 @@ def balance_teams(team1, team2, team3):
             no2 += 1
         else:
             player_list[i]['team'] = team3
-    
     return player_list
-
-
-#Call the balance_teams function and pass in the teams
-final_list = balance_teams(new_list[0], new_list[1], new_list[2])
 
 
 def first_menu():
@@ -140,7 +130,6 @@ def second_menu():
                 break
 
 
-
 def data_count_2000(key, value):
     ''' # Searches the final_list and returns the player count in a team '''
     how_many = 0
@@ -163,7 +152,6 @@ def data_find_count_2000(key_search, value_search, key_find, key_value):
     return how_many
     
 
-
 def data_average_2000(key, value, key_return):
     ''' # Pulls data for height, stores in storage_list, and returns the average ''' 
     storage_list = []
@@ -178,10 +166,16 @@ def data_bank_2000(key, value, key_return):
     ''' # For a given team, return the values associated with a key '''
     storage_list = []
     index_range = range(len(final_list))
-    for i in index_range:
-        if value in final_list[i][key]:
-            storage_list.append(final_list[i][key_return])
-    return (', '.join(storage_list))
+    if key_return == 'name':
+        for i in index_range:
+            if value in final_list[i][key]:
+                storage_list.append(final_list[i][key_return])
+        return ', '.join(storage_list)
+    else:
+        for i in index_range:
+            if value in final_list[i][key]:
+                storage_list.extend(final_list[i][key_return])
+        return ', '.join(storage_list)
                 
              
 def team_statistics(team):
@@ -212,6 +206,11 @@ def team_statistics(team):
     
 
 if __name__ == "__main__":
+    new_list = copy.deepcopy(constants.TEAMS)
+    # Call clean_data function and save in player_list to be used next by the balance_teams function
+    player_list = clean_data()
+    #Call the balance_teams function and pass in the teams
+    final_list = balance_teams(new_list[0], new_list[1], new_list[2], player_list)
     print()
     print(border_line)
     print("BASKETBALL TEAM STATS TOOL! -- Your #1 place for up-to-date stats!")
